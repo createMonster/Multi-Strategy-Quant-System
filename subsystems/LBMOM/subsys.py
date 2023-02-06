@@ -11,7 +11,7 @@ import quantlib.indicators_cal as indicators_cal
 
 class Lbmom:
 
-    def __init__(self, instruments_config, historical_df, simulation_start, vol_target):
+    def __init__(self, instruments_config, historical_df, simulation_start, vol_target, brokerage_used):
         self.pairs = [(44, 100), (156, 245), (23, 184), (176, 290), (215, 288), (245, 298), (59, 127), (134, 275), (220, 286), (60, 168), (208, 249), (19, 152), (38, 122), (234, 254), (227, 293), (64, 186), (28, 49), (22, 106), (25, 212), (144, 148), (260, 284)]
         self.historical_df = historical_df
         self.simulation_start = simulation_start
@@ -20,6 +20,7 @@ class Lbmom:
         #https://hangukquant.substack.com/p/volatility-targeting-the-asset-level
         with open(instruments_config) as f:
             self.instruments_config = json.load(f)
+        self.brokerage_used = brokerage_used
         self.sysname = "LBMOM"
 
     """
@@ -49,20 +50,18 @@ class Lbmom:
 
     def run_simulation(self, historical_data):
         """
-        Init Params
+        Init Params + Pre-processing
         """
-        instruments = self.instruments_config["instruments"]
-
-        """
-        Pre-processing
-        """
+        #lets consider running the strategies on bonds, indices and crypto from the oanda asset universe
+        instruments = self.instruments_config["fx"] +  self.instruments_config["indices"] + self.instruments_config["commodities"] \
+            + self.instruments_config["metals"] + self.instruments_config["bonds"] + self.instruments_config["crypto"]
+        
         historical_data = self.extend_historicals(instruments=instruments, historical_data=historical_data)
-        print(historical_data)
+        
         portfolio_df = pd.DataFrame(index=historical_data[self.simulation_start:].index).reset_index()
         portfolio_df.loc[0, "capital"] = 10000
         is_halted = lambda inst, date: not np.isnan(historical_data.loc[date, "{} active".format(inst)]) and (~historical_data[:date].tail(3)["{} active".format(inst)]).any()
         #this means that in order to `not be a halted asset`, it needs to have actively traded over the all last 3 data points at the minimum
-        print(portfolio_df)
 
         """
         Run Simulation
@@ -117,17 +116,17 @@ class Lbmom:
                 position_vol_target = (1 / len(tradable)) * portfolio_df.loc[i, "capital"] * self.vol_target / np.sqrt(253) #dollar volatility assigned to a single position
                 inst_price = historical_data.loc[date, "{} close".format(inst)]
                 percent_ret_vol = historical_data.loc[date, "{} % ret vol".format(inst)] if historical_data.loc[:date].tail(20)["{} active".format(inst)].all() else 0.025
-                dollar_volatility = inst_price * percent_ret_vol #vol in nominal dollar terms of the asset under consideration
-                #we should be using the position vol target instead of the portfolio vol target, since we already divided the capital
+                dollar_volatility = backtest_utils.unit_val_change(inst, inst_price * percent_ret_vol, historical_data, date) #vol in nominal dollar terms of the asset under consideration
+                #what is value of a position? this inst_price is not the same, since different contracts are in different currency
                 position = strat_scalar * forecast * position_vol_target / dollar_volatility 
                 portfolio_df.loc[i, "{} units".format(inst)] = position
-                nominal_total += abs(position * inst_price) #assuming no FX conversion is required
+                nominal_total += abs(position * backtest_utils.unit_dollar_value(inst, historical_data, date)) #assuming no FX conversion is required
             
             #we see that for the first date, we manage to obtain the positions for the different assets that we want
 
             for inst in tradable:
                 units = portfolio_df.loc[i, "{} units".format(inst)]
-                nominal_inst = units * historical_data.loc[date, "{} close".format(inst)]
+                nominal_inst = units * backtest_utils.unit_dollar_value(inst, historical_data, date)
                 inst_w = nominal_inst / nominal_total
                 portfolio_df.loc[i, "{} w".format(inst)] = inst_w
 

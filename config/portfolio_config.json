@@ -1,0 +1,6 @@
+{
+    "sim_years" : 10,
+    "brokerage": "oan",
+    "vol_target" : 0.20
+    
+}

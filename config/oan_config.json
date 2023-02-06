@@ -1,15 +1,10 @@
 {
-    "fx": [],
-    "commodities": [],
-    "metals": [],
-    
     "crypto": [
         "LTC_USD",
         "BTC_USD",
         "ETH_USD",
         "BCH_USD"
     ],
-
     "indices": [
         "HK33_HKD",
         "FR40_EUR",
@@ -31,6 +26,47 @@
         "CH20_CHF",
         "US30_USD",
         "DE30_EUR"
+    ],
+    "fx": [
+        "USD_MXN",
+        "GBP_USD",
+        "USD_THB",
+        "USD_ZAR",
+        "USD_SEK",
+        "USD_CHF",
+        "USD_TRY",
+        "USD_JPY",
+        "USD_CZK",
+        "USD_NOK",
+        "USD_DKK",
+        "USD_HKD",
+        "NZD_USD",
+        "USD_CNH",
+        "USD_SGD",
+        "USD_CAD",
+        "USD_INR",
+        "USD_HUF",
+        "AUD_USD",
+        "EUR_USD",
+        "USD_PLN"
+    ],
+    
+    "metals": [
+        "XPD_USD",
+        "XAU_USD",
+        "XPT_USD",
+        "XAG_USD"
+    ],
+
+    "commodities": [
+        "BCO_USD",
+        "NATGAS_USD",
+        "XCU_USD",
+        "WTICO_USD",
+        "SUGAR_USD",
+        "CORN_USD",
+        "WHEAT_USD",
+        "SOYBN_USD"
     ],
 
     "bonds": [
