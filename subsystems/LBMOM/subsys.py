@@ -48,7 +48,7 @@ class Lbmom:
         #the historical_data has all the information required for backtesting                
         return historical_data
 
-    def run_simulation(self, historical_data):
+    def run_simulation(self, historical_data, debug=False):
         """
         Init Params + Pre-processing
         """
@@ -135,15 +135,16 @@ class Lbmom:
             """
             portfolio_df.loc[i, "nominal"] = nominal_total
             portfolio_df.loc[i, "leverage"] = nominal_total / portfolio_df.loc[i, "capital"]
-            print(portfolio_df.loc[i])
+            if debug: print(portfolio_df.loc[i])
         
         #let us also store this inside an excel file, and what our strategy generates
         portfolio_df.to_excel("lbmom.xlsx")
 
         return portfolio_df, instruments
 
-    def get_subsys_pos(self):
-        portfolio_df, instruments = self.run_simulation(historical_data=self.historical_df)
+    def get_subsys_pos(self, debug):
+        portfolio_df, instruments = self.run_simulation(historical_data=self.historical_df, debug=debug)
+        return portfolio_df, instruments
 
 
 
@@ -154,3 +155,5 @@ This means: if the asset has been actively traded in the past 20 days, then use 
 This is because, suppose an asset is not actively traded. Then its vol would be low, since there is little movement. Take an asset position inversely proportional
 to vol -> then the asset position would be large, since the reciprocal of vol is large. This would blow up the position sizing! 
 """
+
+#let us do some refactoring
