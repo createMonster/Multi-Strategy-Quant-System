@@ -1,4 +1,5 @@
 {
+    "order_enabled": true,
     "sim_years" : 10,
     "brokerage": "oan",
     "vol_target" : 0.20,
@@ -9,13 +10,17 @@
         },
         "lsmom": {
             "oan": "./subsystems/LSMOM/oan_config.json"
+        },
+        "skprm": {
+            "oan": "./subsystems/SKPRM/oan_config.json"
         }
     },
 
     "subsystems": {
         "oan": {
-            "lbmom": 0.5,
-            "lsmom": 0.5
+            "lbmom": 0.40,
+            "lsmom": 0.40,
+            "skprm": 0.20
         }
     }
     

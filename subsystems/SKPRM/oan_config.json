@@ -1,0 +1,56 @@
+{
+    "fx": [
+    ],
+    
+    "metals": [
+        "XPD_USD",
+        "XAU_USD",
+        "XPT_USD",
+        "XAG_USD"
+    ],
+
+    "commodities": [
+        "BCO_USD",
+        "NATGAS_USD",
+        "XCU_USD",
+        "WTICO_USD",
+        "SUGAR_USD",
+        "CORN_USD",
+        "WHEAT_USD",
+        "SOYBN_USD"
+    ],
+    
+    "crypto": [
+    ],
+
+    "indices": [
+    ],
+
+    "bonds": [
+    ],
+
+    "fx_codes": [
+        "HKD",
+        "HUF",
+        "GBP",
+        "CNH",
+        "NOK",
+        "EUR",
+        "TRY",
+        "SGD",
+        "CZK",
+        "USD",
+        "ZAR",
+        "INR",
+        "SEK",
+        "JPY",
+        "CAD",
+        "NZD",
+        "THB",
+        "PLN",
+        "AUD",
+        "CHF",
+        "DKK",
+        "MXN"
+    ]
+}

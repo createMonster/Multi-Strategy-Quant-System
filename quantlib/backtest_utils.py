@@ -69,5 +69,29 @@ def unit_dollar_value(from_prod, historical_data, date):
         fx_quote = 1 if fx_inst == "USD_USD" else historical_data.loc[date, "{} close".format(fx_inst)]
         return unit_price * fx_quote
 
-#if the fx conversion is correct, then we can test any strategy with any different types of contracts denominations
-#do note that in order for PnL calculation that is precise, you also want to take into consideration funding rates, carry et cetera
+#we set the leverage cap for 2 reasons
+#1. Prevent relative allocations from throwing off statistical relevance of performance results (reducing variance)
+#2. Meet margin requirements by the brokerage specification, where relevant
+def set_leverage_cap(portfolio_df, instruments, date, idx, nominal_tot, leverage_cap, historical_data):
+    leverage = nominal_tot / portfolio_df.loc[idx, "capital"]
+    if leverage > leverage_cap:
+        new_nominals = 0
+        leverage_scalar = leverage_cap / leverage
+        for inst in instruments:
+            newpos = portfolio_df.loc[idx, "{} units".format(inst)] * leverage_scalar
+            portfolio_df.loc[idx, "{} units".format(inst)] = newpos
+            if newpos != 0:
+                new_nominals += abs(newpos * unit_dollar_value(inst, historical_data, date))
+        return new_nominals
+    else:
+        return nominal_tot
+
+#get some statistics from the portfolio df
+def kpis(df):
+    portfolio_df = df.copy()
+    portfolio_df["cum ret"] = (1 + portfolio_df["capital ret"]).cumprod()
+    portfolio_df["drawdown"] = portfolio_df["cum ret"] / portfolio_df["cum ret"].cummax() - 1
+    sharpe = portfolio_df["capital ret"].mean() / portfolio_df["capital ret"].std() * np.sqrt(253)
+    drawdown_max = portfolio_df["drawdown"].min() * 100
+    volatility = portfolio_df["capital ret"].std() * np.sqrt(253) * 100 #annualised percent vol
+    return portfolio_df, sharpe, drawdown_max, volatility

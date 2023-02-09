@@ -4,16 +4,17 @@
 # oanda_key:  6320bb8b1dd427ff7b5c6dd31f00675e-05e3c53f0a74851c18d25b929510b2cd
 
 from brokerage.oanda.TradeClient import TradeClient
+from brokerage.oanda.ServiceClient import ServiceClient
 
 class Oanda():
 
     def __init__(self, auth_config={}):
         self.trade_client = TradeClient(auth_config=auth_config)
-
+        self.service_client = ServiceClient()
     #lets create a service class and trade class for Oanda
 
     def get_service_client(self):
-        pass
+        return self.service_client
 
     def get_trade_client(self):
         return self.trade_client
