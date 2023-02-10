@@ -16,7 +16,7 @@ from collections import defaultdict
 
 class TradeClient():
 
-    def __init__(self, auth_config):
+    def __init__(self, brokerage_config=None, auth_config=None, service_client=None):
         self.id = auth_config["oan_acc_id"]
         self.token = auth_config["oan_token"]
         self.env = auth_config["oan_env"]
@@ -91,8 +91,8 @@ class TradeClient():
         positions = {}
         for entry in positions_data:
             instrument = entry["instrument"]
-            long_pos = int(entry["long"]["units"])
-            short_pos = int(entry["short"]["units"])
+            long_pos = float(entry["long"]["units"])
+            short_pos = float(entry["short"]["units"])
             net_pos = long_pos + short_pos
             if net_pos != 0:
                 positions[instrument] = net_pos
@@ -130,8 +130,24 @@ class TradeClient():
             print(err) #do some error handling
 
     def market_order(self, inst, order_config={}):
-        pass
-
+        #lets try to make a fill or kill market order - read the documentation for the order types and what they mean
+        contract_change = order_config["rounded_contracts"] - order_config["current_contracts"]
+        order_data = {
+            "order": {
+            "price": "", #market order is liqudity taking
+            "timeInForce": "FOK",
+            "instrument": inst,
+            "units": str(contract_change),
+            "type": "MARKET",
+            "positionFill": "DEFAULT"
+            }
+        }
+        print(json.dumps(order_config, indent=4))
+        print(json.dumps(order_data, indent=4))
+        r = orders.OrderCreate(accountID=self.id, data=order_data)
+        self.client.request(r)
+        return r.response
+        
     #we need to implement these functionalities to have a `successful` TradeClient. This is what is `promised` to be implemented to other components of the trading system, 
     #no matter what brokerage is used!
     #lets now implement these wrapper functions

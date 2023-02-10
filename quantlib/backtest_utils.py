@@ -58,7 +58,7 @@ def unit_val_change(from_prod, val_change, historical_data, date):
 def unit_dollar_value(from_prod, historical_data, date):
     is_denominated = len(from_prod.split("_")) == 2
     if not is_denominated:
-        return historical_data.loc[date, "{} close".format(date)] #e.g. AAPL units is worth the price of 1 AAPL unit
+        return historical_data.loc[date, "{} close".format(from_prod)] #e.g. AAPL units is worth the price of 1 AAPL unit
     if is_denominated and from_prod.split("_")[0] == "USD":
         return 1 #e.g. USD_JPY unit is worth 1 USD!
     if is_denominated and not from_prod.split("_")[0] == "USD":

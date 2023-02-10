@@ -1,7 +1,23 @@
+"""
+Both our Oanda and Darwinex brokerages are running smoothly, with a single code base.
+We are able to do a master switch between the 2 brokerages by simply changing the settings inside the portfolio_config.json without changing any code
+
+#in order to implement a new strategy, we can simply
+1. Add the config files for the brokerage involved and the strategy config
+2. Add the model to the main driver by importing the class
+3. Edit the alpha generation portion of the logic, and optionally add nominal caps.
+4. Adjust weight allocations if manual/static weight schemes are adopted
+
+#to add a new brokerage
+1. Add the brokerage class
+2. Implement the ServiceClass API and TradeClient API
+3. Everything else is the same!
+
+"""
+
 import json
 import datetime
 import pandas as pd
-
 
 from dateutil.relativedelta import relativedelta
 
@@ -14,10 +30,10 @@ from quantlib.printer_utils import _Colors as Colors
 from quantlib.printer_utils import _Highlights as Highlights
 
 from brokerage.oanda.oanda import Oanda
+from brokerage.darwinex.darwinex import Darwinex
 from subsystems.LBMOM.subsys import Lbmom
 from subsystems.LSMOM.subsys import Lsmom
 from subsystems.SKPRM.subsys import Skprm
-
 
 with open("config/auth_config.json", "r") as f:
     auth_config = json.load(f)
@@ -25,14 +41,23 @@ with open("config/auth_config.json", "r") as f:
 with open("config/portfolio_config.json", "r") as f:
     portfolio_config = json.load(f)
 
-with open("config/oan_config.json", "r") as f:
+
+brokerage_used = portfolio_config["brokerage"]
+brokerage_config_path = portfolio_config["brokerage_config"][brokerage_used]
+db_file = portfolio_config["database"][brokerage_used]
+
+with open("config/{}".format(brokerage_config_path), "r") as f:
     brokerage_config = json.load(f)
 
-brokerage_used = "oan"
 if brokerage_used == "oan":
-    brokerage = Oanda(auth_config=auth_config)
+    brokerage = Oanda(brokerage_config=brokerage_config, auth_config=auth_config)
+    db_instruments = brokerage_config["fx"] +  brokerage_config["indices"] + brokerage_config["commodities"] + brokerage_config["metals"] + brokerage_config["bonds"] + brokerage_config["crypto"]
+elif brokerage_used == "dwx":
+    brokerage = Darwinex(brokerage_config=brokerage_config, auth_config=auth_config)
+    db_instruments = brokerage_config["fx"] +  brokerage_config["indices"] + brokerage_config["commodities"]  + brokerage_config["equities"]
 else:
-    pass
+    print("unknown brokerage, try again.")
+    exit()
 
 def print_inst_details(order_config, is_held, required_change=None, percent_change=None, is_override=None):
     color = Colors.YELLOW if not is_held else Colors.BLUE
@@ -128,48 +153,56 @@ def run_simulation(instruments, historical_data, portfolio_vol, subsystems_dict,
         portfolio_df.set_index("date", inplace=True)
 
         diagnostic_utils.save_backtests(
-        portfolio_df=portfolio_df, instruments=instruments, brokerage_used=brokerage_used, sysname="HANGUKQUANT"
+        portfolio_df=portfolio_df, instruments=instruments, brokerage_used=brokerage_used, sysname="LARRY"
         )
         diagnostic_utils.save_diagnostics(
-            portfolio_df=portfolio_df, instruments=instruments, brokerage_used=brokerage_used, sysname="HANGUKQUANT"
+            portfolio_df=portfolio_df, instruments=instruments, brokerage_used=brokerage_used, sysname="LARRY"
         )
     else:
-        portfolio_df = gu.load_file("./backtests/{}_{}.obj".format(brokerage_used, "HANGUKQUANT"))
+        portfolio_df = gu.load_file("./backtests/{}_{}.obj".format(brokerage_used, "LARRY"))
 
     return portfolio_df
 
 
 def main():
-    #lets write a master config file
-    use_disk = True
-    db_instruments = brokerage_config["fx"] +  brokerage_config["indices"] + brokerage_config["commodities"] + brokerage_config["metals"] + brokerage_config["bonds"] + brokerage_config["crypto"]
+    use_disk = portfolio_config["use_disk"]
 
     """
     Load and Update the Database
     """
-    database_df = gu.load_file("./Data/oan_ohlcv.obj")
-    #database_df = pd.read_excel("./Data/oan_ohlcv.xlsx").set_index("date")
-    print(database_df) #now we can obtain, update and maintain the database from Oanda instead of the sp500 dataset!
+    database_df = gu.load_file("./Data/{}_ohlcv.obj".format(brokerage_used))
+    database_df = pd.read_excel("./Data/{}".format(db_file)).set_index("date")
+    database_df = database_df.loc[~database_df.index.duplicated(keep="first")] 
 
-    #save time, but we want to uncomment this laters
-    # poll_df = pd.DataFrame()
-    # for db_inst in db_instruments:
-    #     df = brokerage.get_trade_client().get_ohlcv(instrument=db_inst, count=30, granularity="D") #get daily candles for the last 30 data points
-    #     df.set_index("date", inplace=True)
-    #     print(db_inst, "\n", df)
-    #     cols = list(map(lambda x: "{} {}".format(db_inst, x), df.columns)) 
-    #     df.columns = cols
-        
-    #     if len(poll_df) == 0:
-    #         poll_df[cols] = df
-    #     else:
-    #         poll_df = poll_df.combine_first(df) #Now we do not lose any data!
-
-
-    # database_df = database_df.loc[:poll_df.index[0]][:-1] #this means take original database up to the starting point of the new database, and drop the overlapping data entry point
-    # database_df = database_df.append(poll_df)
-    # #database_df.to_excel("./Data/oan_ohlcv.xlsx") #lets not write to excel to save time!
-    # gu.save_file("./Data/oan_ohlcv.obj", database_df)
+    poll_df = pd.DataFrame()
+    for db_inst in db_instruments:
+        tries = 0
+        again = True
+        while again:
+            try:
+                df = brokerage.get_trade_client().get_ohlcv(instrument=db_inst, count=30, granularity="D")
+                df.set_index("date", inplace=True)
+                print(db_inst, "\n", df)
+                cols = list(map(lambda x: "{} {}".format(db_inst, x), df.columns)) 
+                df.columns = cols                
+                if len(poll_df) == 0:
+                    poll_df[cols] = df
+                else:
+                    poll_df = poll_df.combine_first(df)
+                again = False
+            except Exception as err:
+                print(err)
+                tries += 1
+                if tries >=5:
+                    again=False
+                    print("Check TCP Socket Connection, rerun application")
+                    exit()
+   
+    database_df = database_df.loc[:poll_df.index[0]][:-1]
+    database_df = database_df.append(poll_df)
+    print(database_df)
+    database_df.to_excel("./Data/{}".format(db_file))
+    gu.save_file("./Data/{}_ohlcv.obj".format(brokerage_used), database_df)
         
     """
     Extend the Database
@@ -221,20 +254,22 @@ def main():
                 brokerage_used=brokerage_used
             )
         else:
-            pass#...
+            print("unknown strat")
+            exit()
+
         strats[subsystem] = strat
     
     subsystems_dict = {}
     traded = []
     for k, v in strats.items():
         print("run: ", k, v)
-        strat_df, strat_inst = v.get_subsys_pos(debug=True, use_disk=True) #see if you want to print the items
+        strat_df, strat_inst = v.get_subsys_pos(debug=True, use_disk=use_disk)
         subsystems_dict[k] = {
             "strat_df": strat_df,
             "strat_inst": strat_inst
         }
         traded += strat_inst
-    traded = list(set(traded)) #get unique traded assets
+    traded = list(set(traded))
 
     portfolio_df = run_simulation(traded, historical_data, VOL_TARGET, subsystems_dict, subsystems_config, brokerage_used, debug=True, use_disk=use_disk)
     print(portfolio_df)
@@ -260,7 +295,6 @@ def main():
         }
 
     print(json.dumps(portfolio_optimal, indent=4))
-    #checkpoint 10!
 
     """
     Edit Open Positions    
@@ -286,7 +320,18 @@ def main():
     Open New positions
     """
     for inst_unheld in instruments_unheld:
-        pass
+        Printer.pretty(left="\n******************************************************", color=Colors.YELLOW)
+        order_config = brokerage.get_service_client().get_order_specs(
+            inst=inst_unheld,
+            units=portfolio_optimal[inst_unheld]["scaled_units"],
+            current_contracts=0
+        )
+        if order_config["rounded_contracts"] != 0:
+            print_inst_details(order_config, False)
+            print_order_details(order_config["rounded_contracts"])
+            if portfolio_config["order_enabled"]:
+                brokerage.get_trade_client().market_order(inst=inst_unheld, order_config=order_config)
+        Printer.pretty(left="******************************************************\n", color=Colors.YELLOW)
 
 
 

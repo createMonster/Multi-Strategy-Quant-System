@@ -1,0 +1,52 @@
+{
+    "fx": [
+        "AUD_USD",
+        "EUR_USD",
+        "GBP_USD",
+        "NZD_USD",
+        "USD_CAD",
+        "USD_CHF",
+        "USD_JPY",
+        "USD_MXN",
+        "USD_NOK",
+        "USD_SEK",
+        "USD_SGD",
+        "USD_TRY"
+    ],
+    
+    "metals": [
+    ],
+
+    "commodities": [
+        "XAG_USD",
+        "XAU_USD",
+        "XNG_USD",
+        "XTI_USD"
+    ],
+    
+    "crypto": [
+    ],
+
+    "indices": [
+    ],
+
+    "bonds": [
+    ],
+
+    "fx_codes": [
+        "TRY",
+        "CHF",
+        "EUR",
+        "AUD",
+        "SEK",
+        "GBP",
+        "MXN",
+        "NOK",
+        "JPY",
+        "NZD",
+        "USD",
+        "CAD",
+        "SGD"
+        
+    ]
+}

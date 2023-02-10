@@ -1,15 +1,27 @@
 {
-    "order_enabled": true,
-    "sim_years" : 10,
     "brokerage": "oan",
+    "use_disk": false,
+    "brokerage_config": {
+        "dwx": "dwx_config.json",
+        "oan": "oan_config.json"
+    },
+    "database": {
+        "dwx": "dwx_ohlcv.xlsx",
+        "oan": "oan_ohlcv.xlsx"
+    },
+
+    "order_enabled": false,
+    "sim_years" : 3,
     "vol_target" : 0.20,
 
     "instruments_config": {
         "lbmom": {
-            "oan": "./subsystems/LBMOM/oan_config.json"
+            "oan": "./subsystems/LBMOM/oan_config.json",
+            "dwx": "./subsystems/LBMOM/dwx_config.json"
         },
         "lsmom": {
-            "oan": "./subsystems/LSMOM/oan_config.json"
+            "oan": "./subsystems/LSMOM/oan_config.json",
+            "dwx": "./subsystems/LSMOM/dwx_config.json"
         },
         "skprm": {
             "oan": "./subsystems/SKPRM/oan_config.json"
@@ -21,6 +33,10 @@
             "lbmom": 0.40,
             "lsmom": 0.40,
             "skprm": 0.20
+        },
+        "dwx": {
+            "lbmom": 0.50,
+            "lsmom": 0.50
         }
     }
     

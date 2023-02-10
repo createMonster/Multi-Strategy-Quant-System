@@ -8,11 +8,13 @@ import setuptools #python3 -m pip install setuptools
 setuptools.setup(
     name="quantlib",
     version="0.1",
-    description="code lib",
+    description="code lib by HangukQuant",
     url="#",
-    author="Larry",
+    author="HangukQuant",
     install_requires=["opencv-python"],
     author_email="",
     packages=setuptools.find_packages(),
     zip_safe=False
-)
+) #do go and read what these parameters mean!
+
+#you now have a code library!

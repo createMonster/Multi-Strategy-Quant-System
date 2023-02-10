@@ -1,0 +1,57 @@
+{
+    "equities": [
+        "MPC",
+        "MRK",
+        "MS",
+        "NEE",
+        "NEM",
+        "NKE",
+        "NOC",
+        "NSC",
+        "OKE",
+        "OMC",
+        "ORCL",
+        "OXY",
+        "PANW",
+        "PFE",
+        "PG",
+        "PGR",
+        "PH",
+        "PLD",
+        "PM",
+        "PNC",
+        "PPG",
+        "PRU",
+        "PSA",
+        "PXD"
+    ],
+
+    "fx": [],
+    "commodities": [],
+    "metals": [],
+    
+    "crypto": [
+    ],
+
+    "indices": [
+    ],
+
+    "bonds": [
+    ],
+
+    "fx_codes": [
+        "TRY",
+        "CHF",
+        "EUR",
+        "AUD",
+        "SEK",
+        "GBP",
+        "MXN",
+        "NOK",
+        "JPY",
+        "NZD",
+        "USD",
+        "CAD",
+        "SGD"
+    ]
+}

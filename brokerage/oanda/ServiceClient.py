@@ -3,8 +3,8 @@
 
 class ServiceClient():
 
-    def __init__(self):
-        pass
+    def __init__(self, brokerage_config=None):
+        self.brokerage_config = brokerage_config
 
     #lets implement some API interface that our TradeClient would use, and later we will see how they become useful
 

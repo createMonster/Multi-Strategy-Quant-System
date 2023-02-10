@@ -15,6 +15,8 @@ class Lbmom:
 
     def __init__(self, instruments_config, historical_df, simulation_start, vol_target, brokerage_used):
         self.pairs = [(44, 100), (156, 245), (23, 184), (176, 290), (215, 288), (245, 298), (59, 127), (134, 275), (220, 286), (60, 168), (208, 249), (19, 152), (38, 122), (234, 254), (227, 293), (64, 186), (28, 49), (22, 106), (25, 212), (144, 148), (260, 284)]
+        #lets make the tests faster with lesser pairs
+        self.pairs = self.pairs[:15]
         self.historical_df = historical_df
         self.simulation_start = simulation_start
         self.vol_target = vol_target #we adopt the volatility targetting risk framework. 
@@ -56,7 +58,7 @@ class Lbmom:
         """
         #lets consider running the strategies on bonds, indices and crypto from the oanda asset universe
         instruments = self.instruments_config["fx"] +  self.instruments_config["indices"] + self.instruments_config["commodities"] \
-            + self.instruments_config["metals"] + self.instruments_config["bonds"] + self.instruments_config["crypto"]
+            + self.instruments_config["metals"] + self.instruments_config["bonds"] + self.instruments_config["crypto"] + self.instruments_config["equities"]
         
         if not use_disk:
             historical_data = self.extend_historicals(instruments=instruments, historical_data=historical_data)
