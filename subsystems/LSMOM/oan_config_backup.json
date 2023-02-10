@@ -1,5 +1,27 @@
 {
-    "fx": [],
+    "fx": [
+        "USD_MXN",
+        "GBP_USD",
+        "USD_THB",
+        "USD_ZAR",
+        "USD_SEK",
+        "USD_CHF",
+        "USD_TRY",
+        "USD_JPY",
+        "USD_CZK",
+        "USD_NOK",
+        "USD_DKK",
+        "USD_HKD",
+        "NZD_USD",
+        "USD_CNH",
+        "USD_SGD",
+        "USD_CAD",
+        "USD_INR",
+        "USD_HUF",
+        "AUD_USD",
+        "EUR_USD",
+        "USD_PLN"
+    ],
     
     "metals": [
         "XPD_USD",
