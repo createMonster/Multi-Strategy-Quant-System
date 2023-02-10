@@ -20,8 +20,7 @@ def get_sp500_instruments():
     df = pd.read_html(str(table))
     return list(df[0]["Symbol"])
 
-#now we want to get the data for it
-#look at documentation!: pypi.org/project/yfinance
+
 def get_sp500_df():
     symbols = get_sp500_instruments()
     #to save time, let us perform ohlcv retrieval for 30 stocks

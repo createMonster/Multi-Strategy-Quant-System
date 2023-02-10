@@ -8,9 +8,9 @@ import setuptools #python3 -m pip install setuptools
 setuptools.setup(
     name="quantlib",
     version="0.1",
-    description="code lib by HangukQuant",
+    description="code lib by Larry",
     url="#",
-    author="HangukQuant",
+    author="Larry",
     install_requires=["opencv-python"],
     author_email="",
     packages=setuptools.find_packages(),
