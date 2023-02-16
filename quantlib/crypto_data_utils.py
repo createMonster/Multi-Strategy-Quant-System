@@ -59,7 +59,7 @@ def get_crypto_futures_df(interval='4h', limit=1000):
         cols = list(map(lambda x: f"{inst} {x}", inst_df.columns))
         df[cols] = inst_df
 
-    print (df)
+    df.to_excel(f"crypto_ohlv_{interval}.xlsx")
     return df, instruments
 
 
@@ -79,10 +79,10 @@ def extend_dataframe(traded, df, interval='4h'):
         # active if the close price are not the same between two days
         historical_data[f"{inst} active"] = historical_data[f"{inst} close"] != historical_data[f"{inst} close"].shift(1)
 
-    historical_data.to_excel(f"crypto_historical_{interval}.xlsx")
+    #historical_data.to_excel(f"crypto_historical_{interval}.xlsx")
     return historical_data
         
 
-    
-df, instruments = get_crypto_futures_df(interval='1h', limit=1000)
-historical_data = extend_dataframe(instruments, df, interval='1h')
+if __name__ == "__main__":
+    df, instruments = get_crypto_futures_df(interval='1h', limit=1000)
+    #historical_data = extend_dataframe(instruments, df, interval='1h')
