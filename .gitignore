@@ -1,3 +1,4 @@
 *.pyc
 *.xlsx
 *.obj
+.DS_Store
