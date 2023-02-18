@@ -84,5 +84,5 @@ def extend_dataframe(traded, df, interval='4h'):
         
 
 if __name__ == "__main__":
-    df, instruments = get_crypto_futures_df(interval='1h', limit=1000)
+    df, instruments = get_crypto_futures_df(interval='1h', limit=1000) # max limit is 1500
     #historical_data = extend_dataframe(instruments, df, interval='1h')
