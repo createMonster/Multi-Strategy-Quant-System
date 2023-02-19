@@ -46,10 +46,15 @@ else:
 
 subsystem = "lbmom"
 db_instruments = crypto_du.get_symbols()[:250] # Save time
-db_file = "crypto_ohlv_1h.xlsx"
+db_file = "crypto_ohlv_4h.xlsx"
 database_df = pd.read_excel("./Data/{}".format(db_file)).set_index("open_time")
-historical_data = crypto_du.extend_dataframe(traded=db_instruments, df=database_df)
-historical_data.to_excel("crypto_historical_data.xlsx")
+
+new_file = "crypto_ohlv_4h_1656691200000.xlsx"
+new_df = pd.read_excel(new_file).set_index("open_time")
+merge_df = pd.concat([new_df, database_df]).drop_duplicates()
+
+historical_data = crypto_du.extend_dataframe(traded=db_instruments, df=merge_df, interval="4h")
+historical_data.to_excel("crypto_historical_3000limit_4h.xlsx")
 exit()
 VOL_TARGET = 0.2
 sim_start = datetime.date.today() - relativedelta(days=30)

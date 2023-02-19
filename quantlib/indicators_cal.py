@@ -18,6 +18,7 @@ def ema_series(series, n):
 def sma_series(series, n):
     return talib.SMA(series, timeperiod=n)
 
+
 """
 The reason why we do this in a separate library is due to design principle, such as separation of concerns.
 Other modules are not concerned with how the logic for EMA/SMA is implemented, it is just interested in getting the SMA.
