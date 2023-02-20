@@ -29,7 +29,7 @@ def get_symbols():
     return symbols
 
 
-def get_crypto_futures_df(interval='4h', limit=1000):
+def get_crypto_futures_df(interval='4h', limit=1000, end_time=None):
     """Get all tradable crypto data from binance"""
     url = "/fapi/v1/klines"
     url = BINANCE_BASE_URL + url
@@ -44,6 +44,8 @@ def get_crypto_futures_df(interval='4h', limit=1000):
             "interval": interval,
             "limit": str(limit)
         }
+        if end_time:
+            data["endTime"] = end_time
         response = requests.get(url, params=data).json()
         ohlcvs[symbol] = (pd.DataFrame(response, columns=columns, dtype=float)
                             .drop(["close_time", "ignore", "volume", "taker_buy_volume"], axis=1)
@@ -59,7 +61,10 @@ def get_crypto_futures_df(interval='4h', limit=1000):
         cols = list(map(lambda x: f"{inst} {x}", inst_df.columns))
         df[cols] = inst_df
 
-    df.to_excel(f"crypto_ohlv_{interval}.xlsx")
+    if not end_time:
+        df.to_excel(f"crypto_ohlv_{interval}.xlsx")
+    else:
+        df.to_excel(f"crypto_ohlv_{interval}_{end_time}.xlsx")
     return df, instruments
 
 
@@ -84,5 +89,5 @@ def extend_dataframe(traded, df, interval='4h'):
         
 
 if __name__ == "__main__":
-    df, instruments = get_crypto_futures_df(interval='1h', limit=1000)
+    df, instruments = get_crypto_futures_df(interval='4h', limit=1400, end_time=1656691200000) # max limit is 1500
     #historical_data = extend_dataframe(instruments, df, interval='1h')
