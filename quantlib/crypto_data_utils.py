@@ -28,6 +28,13 @@ def get_symbols():
 
     return symbols
 
+def get_symbols_from_df(df):
+    instruments = []
+    for col in df.columns:
+        inst = col.split(" ")[0]
+        if "USD" in inst and inst not in instruments:
+            instruments.append(inst)
+    return instruments
 
 def get_crypto_futures_df(interval='4h', limit=1000, end_time=None):
     """Get all tradable crypto data from binance"""
