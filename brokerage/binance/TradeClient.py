@@ -14,6 +14,7 @@ class TradeClient():
         self.key='p7oSVwcOJx16QL3FZWmhe1yoTXjK5gbyxBM3dlkpHc3LVLJgfksrInn2paJJC0uK'
         self.secret ='zcBJS77OsQPcphK6vcb43vUdP2djhb33XhBqAnljoyt5Vz7E5axCFAr4jadmIpv5'
         self.client = UMFutures(key=self.key, secret=self.secret)
+        self.mark_price = None
 
     """
     We are interested in getting
@@ -22,6 +23,9 @@ class TradeClient():
     3. Submit Orders
     4. Get OHLCV data etc
     """
+    def get_mark_price(self):
+        """Get the current market mark price when needed"""
+        self.mark_price = self.client.mark_price()
 
     def get_account_details(self):
         try:
@@ -105,16 +109,18 @@ class TradeClient():
             break
         return response
 
-    def market_order(self, symbol, order_config={}):
+    def make_market_order(self, symbol, order_config={}, open=False):
         # quantity should indicate the side
-        MARKET_SLIPPERAGE = 0.02
+        if open:
+            self.set_isolated_leverage(symbol=symbol, leverage=order_config["leverage"])
+        MARKET_SLIPPERAGE = 0.03
         quantity = float(order_config["quantity"])
+        reduce_only = order_config.get("reduceOnly", False)
         if quantity < 0:
             position_side = "SELL"
             price = float(order_config["price"]) * (1-MARKET_SLIPPERAGE)
         else:
             position_side = "BUY"
-            self.set_isolated_leverage(symbol=symbol, leverage=order_config["leverage"])
             price = float(order_config["price"]) * (1+MARKET_SLIPPERAGE)
         
         params = {
@@ -124,10 +130,66 @@ class TradeClient():
             'quantity': format_quantity(abs(quantity), price),
             'price': format_price(price),
             'timeInForce': 'GTC',
+            'reduceOnly': reduce_only
         }
         print (params)
         res = self.repeat_orders(params)
         return res
+    
+    def close(self, symbol):
+        positions = self.get_account_positions()
+        try:
+            details = positions[symbol]
+            self.close_positon(symbol, details)
+        except:
+            print (f"There is no such position for {symbol}!")
+            return
+        
+    def close_positon(self, symbol, details):
+        try:
+            quantity = 0-details['positionAmt'] # Take the opposite to close a position
+            price = self.get_current_price(symbol)
+            price = format_price(price)
+
+            order_config = {
+                "reduceOnly": True,
+                "quantity": format_quantity(quantity, price),
+                "price": price
+            }
+            response = self.make_market_order(symbol, order_config=order_config)
+            return response
+        except Exception as e:
+            print (f"Error when closing position for {symbol}!")
+            print (e)
+    
+    def open_position(self, symbol, param):
+        try:
+            price = self.get_current_price(symbol)
+            price = format_price(price)
+            nominal_usd = param['leverage'] * param['collateral']
+
+            quantity = nominal_usd / price
+            quantity = format_quantity(quantity, price)
+            if param['side'] == "SELL":
+                quantity = -quantity
+            order_config = {
+                "quantity": quantity,
+                "price": price,
+                "leverage": param['leverage']
+            }
+            response = self.make_market_order(symbol, order_config=order_config, open=True)
+            return response
+        except Exception as e:
+            print (f"Error when opening position for {symbol}!")
+            print (e)
+
+    def get_current_price(self, symbol):
+        if not self.mark_price:
+            self.get_mark_price()
+        for element in self.mark_price:
+            if element['symbol'] == symbol:
+                return float(element['markPrice'])
+        return
         
 
 if __name__ == "__main__":
@@ -138,5 +200,13 @@ if __name__ == "__main__":
         "price": 3.05,
         "leverage": 3
     }
-    trade_client.market_order(symbol, order_config)
-    print (trade_client.get_account_positions())
+    #trade_client.market_order(symbol, order_config)
+    #print (trade_client.get_account_details()['positions'])
+    #print (trade_client.client.mark_price())
+
+    BUY_PARAMS = {
+        "side": "BUY",
+        "leverage": 3,
+        "collateral": 10,
+    }
+    trade_client.close(symbol)

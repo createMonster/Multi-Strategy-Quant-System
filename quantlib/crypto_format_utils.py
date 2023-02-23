@@ -10,7 +10,7 @@ def format_quantity(quantity, price):
     else:
         quantity = float("{:.3f}".format(quantity))
 
-    return abs(quantity)
+    return quantity
 
 def format_price(stop_price):
 

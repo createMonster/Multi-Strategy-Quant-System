@@ -4,6 +4,9 @@ import pandas as pd
 
 from dateutil.relativedelta import relativedelta
 import quantlib.crypto_data_utils as crypto_du
+from brokerage.binance.TradeClient import TradeClient
+
+import config.crypto_config as conf
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,8 +22,9 @@ def prepare_data():
     db_file_path = f"./Data/{db_file}"
     database_df = pd.read_excel(db_file_path).set_index("open_time")
 
-    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=200)
-    merge_df = pd.concat([database_df, new_df]).drop_duplicates(keep="first").sort_index()
+    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=20)
+    merge_df = pd.concat([database_df, new_df])
+    merge_df = merge_df[~merge_df.index.duplicated(keep='last')].sort_index()
     merge_df.to_excel(db_file_path)
     # Historical_data would include everything till now, also the current not finished kline
     historical_data = crypto_du.extend_dataframe(traded=instruments, df=merge_df, interval="4h")
@@ -68,7 +72,33 @@ def execute_orders(long_list, short_list, test=True):
     """
     Execute orders, if test, no orders will be made
     """
-    pass
+    client = TradeClient()
+    curr_positions = client.get_account_positions()
+    if test:
+        print (curr_positions)
+        return
+
+    # Close positions
+    for symbol, details in curr_positions.items():
+        position_amount = details['positionAmt']
+        if symbol in long_list and position_amount > 0:
+            continue
+        if symbol in short_list and position_amount < 0:
+            continue
+        client.close_positon(symbol, details)
+
+    # Open positons
+    curr_positions = client.get_account_positions()
+    
+    for symbol in long_list:
+        if symbol not in curr_positions:
+            client.open_position(symbol, conf.BUY_PARAMS)
+    
+    for symbol in short_list:
+        if symbol not in curr_positions:
+            client.open_position(symbol, conf.SELL_PARAMS)
+
+    print ("Orders have been placed!")
 
 
 def main(use_disk=False, test=True):
@@ -83,5 +113,4 @@ def main(use_disk=False, test=True):
 
 if __name__ == "__main__":
     print ("Working!")
-    main(use_disk=True, test=True)
-    
+    main(use_disk=True, test=False)
