@@ -22,7 +22,7 @@ def prepare_data():
     db_file_path = f"./Data/{db_file}"
     database_df = pd.read_excel(db_file_path).set_index("open_time")
 
-    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=20)
+    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=100)
     merge_df = pd.concat([database_df, new_df])
     merge_df = merge_df[~merge_df.index.duplicated(keep='last')].sort_index()
     merge_df.to_excel(db_file_path)
