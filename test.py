@@ -45,16 +45,23 @@ else:
 
 
 subsystem = "lbmom"
-db_instruments = crypto_du.get_symbols()[:250] # Save time
+db_instruments = crypto_du.get_symbols()
 db_file = "crypto_ohlv_4h.xlsx"
-database_df = pd.read_excel("./Data/{}".format(db_file)).set_index("open_time")
+db_file_path = f"./Data/{db_file}"
+database_df = pd.read_excel(db_file_path).set_index("open_time")
 
-new_file = "crypto_ohlv_4h_1656691200000.xlsx"
-new_df = pd.read_excel(new_file).set_index("open_time")
-merge_df = pd.concat([new_df, database_df]).drop_duplicates()
+new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=200)
+merge_df = pd.concat([database_df, new_df]).drop_duplicates(keep="first")
 
+
+#new_file = "crypto_ohlv_4h.xlsx"
+#new_df = pd.read_excel(new_file).set_index("open_time")
+#merge_df = pd.concat([new_df, database_df]).drop_duplicates()
+
+merge_df = merge_df.sort_index()
+merge_df.to_excel(db_file_path)
 historical_data = crypto_du.extend_dataframe(traded=db_instruments, df=merge_df, interval="4h")
-historical_data.to_excel("crypto_historical_3000limit_4h.xlsx")
+historical_data.to_excel("crypto_historical_4h.xlsx")
 exit()
 VOL_TARGET = 0.2
 sim_start = datetime.date.today() - relativedelta(days=30)
