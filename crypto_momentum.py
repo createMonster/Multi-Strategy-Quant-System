@@ -40,7 +40,7 @@ def generate_signal(historical_data, instruments):
     LOOK_BACK = 40
     LOOK_AHEAD = 20
     K = 20
-    IGNORES = 1 # We do not want to count the closest momentum for possible reversion
+    IGNORES = 5 # We do not want to count the closest momentum for possible reversion
 
     ret_cols = []
     SHIFT_UNITS = LOOK_BACK + IGNORES
