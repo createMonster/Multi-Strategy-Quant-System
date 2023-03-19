@@ -20,7 +20,7 @@ def format_price(stop_price):
         stop_price = float("{:.4f}".format(stop_price))
     elif stop_price < 10:
         stop_price = float("{:.3f}".format(stop_price))
-    elif stop_price < 3000:
+    elif stop_price < 200:
         stop_price = float("{:.2f}".format(stop_price))
     else:
         stop_price = float("{:.1f}".format(stop_price))
