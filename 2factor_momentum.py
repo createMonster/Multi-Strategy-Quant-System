@@ -12,7 +12,7 @@ import config.crypto_config as conf
 import warnings
 warnings.filterwarnings("ignore")
 
-def prepare_data():
+def prepare_data(limit=100):
     """
     Get Data, update database
 
@@ -23,7 +23,7 @@ def prepare_data():
     db_file_path = f"./Data/{db_file}"
     database_df = pd.read_excel(db_file_path).set_index("open_time")
 
-    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=100)
+    new_df, instruments = crypto_du.get_crypto_futures_df(interval="4h", limit=limit)
     merge_df = pd.concat([database_df, new_df])
     merge_df = merge_df[~merge_df.index.duplicated(keep='last')].sort_index()
     merge_df.to_excel(db_file_path)
@@ -129,7 +129,7 @@ def execute_orders(long_list, short_list, test=True):
 
 def main(use_disk=False, test=True):
     if not use_disk:
-        historical_data, instruments = prepare_data()
+        historical_data, instruments = prepare_data(limit=50)
     else:
         historical_data = pd.read_excel("./crypto_historical_4h.xlsx", engine="openpyxl", index_col='open_time')
         instruments = crypto_du.get_symbols_from_df(historical_data)
@@ -140,3 +140,4 @@ def main(use_disk=False, test=True):
 if __name__ == "__main__":
     print ("Working!")
     main(use_disk=True, test=False)
+    #main(use_disk=False, test=True)

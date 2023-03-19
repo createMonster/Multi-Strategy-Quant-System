@@ -36,6 +36,10 @@ def get_symbols_from_df(df):
             instruments.append(inst)
     return instruments
 
+def sleep_if_big_limit(limit):
+    if limit >= 1000:
+        time.sleep(0.35)
+
 def get_crypto_futures_df(interval='4h', limit=1000, end_time=None):
     """Get all tradable crypto data from binance"""
     url = "/fapi/v1/klines"
@@ -45,7 +49,7 @@ def get_crypto_futures_df(interval='4h', limit=1000, end_time=None):
     symbols = get_symbols()
     ohlcvs = {}
     for symbol in symbols:
-        time.sleep(0.4) # Prevent exceeding the API limit
+        sleep_if_big_limit(limit) # Prevent exceeding the API limit
         data = {
             "symbol": symbol,
             "interval": interval,
