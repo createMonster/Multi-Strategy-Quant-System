@@ -1,9 +1,6 @@
 import requests
-import datetime
 import time
 import pandas as pd
-import yfinance as yf #python3 -m pip install yFinance
-from bs4 import BeautifulSoup #python3 -m pip insall bs4
 
 BINANCE_BASE_URL = "https://fapi.binance.com"
 
@@ -22,7 +19,7 @@ def get_symbols():
     for symbol in symbols:
         if "BUSD" in symbol and symbol[:-4] + "USDT" in symbols:
             remove_list.append(symbol)
-        if "_" in symbol:
+        if "_" in symbol or "USDC" in symbol:
             remove_list.append(symbol)
     symbols = [x for x in symbols if x not in remove_list]
 

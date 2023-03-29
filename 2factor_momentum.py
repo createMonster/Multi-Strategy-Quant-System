@@ -129,7 +129,7 @@ def execute_orders(long_list, short_list, test=True):
 
 def main(use_disk=False, test=True):
     if not use_disk:
-        historical_data, instruments = prepare_data(limit=50)
+        historical_data, instruments = prepare_data(limit=100)
     else:
         historical_data = pd.read_excel("./crypto_historical_4h.xlsx", engine="openpyxl", index_col='open_time')
         instruments = crypto_du.get_symbols_from_df(historical_data)
