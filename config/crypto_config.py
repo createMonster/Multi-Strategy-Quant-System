@@ -1,7 +1,7 @@
 
 ########SETTINGS################
-long_amount = 12000
-short_amount = long_amount * 0.7
+long_amount = 10500
+short_amount = long_amount * 0.68
 long_nums, short_nums = 8, 0
 ################################
 

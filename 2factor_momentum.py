@@ -11,10 +11,10 @@ import config.crypto_config as conf
 import warnings
 warnings.filterwarnings("ignore")
 
-LONG_RANK = [(0, 3), (1, 3), (4, 0), (4, 1)]
-lw = [0.3, 0.15, 0.4, 0.15]
-SHORT_RANK = [(0, 0), (0, 2), (1, 0), (4, 2), (4, 3)]
-sw = [0.4, 0.1, 0.1, 0.2, 0.2]
+LONG_RANK = [(0, 3), (1, 3), (4, 0)]
+lw = [0.25, 0.25, 0.5]
+SHORT_RANK = [(0, 0), (0, 2), (1, 0)]
+sw = [0.4, 0.2, 0.4]
 rank_weight_dict = {}
 for i, rank in enumerate(LONG_RANK):
     rank_weight_dict[rank] = lw[i]
@@ -159,7 +159,7 @@ def execute_orders(long_list, short_list, test=True):
             params["collateral"] = params["collateral"] * long_list[i]["weight"]
             print (symbol, params)
             client.open_position(symbol, params)
-            time.sleep(0.5)
+            time.sleep(0.3)
     
     for i, symbol in enumerate(short_symbols):
         if symbol not in curr_positions:
@@ -167,7 +167,7 @@ def execute_orders(long_list, short_list, test=True):
             params["collateral"] = params["collateral"] * short_list[i]["weight"]
             print (symbol, params)
             client.open_position(symbol, params)
-            time.sleep(0.5)
+            time.sleep(0.3)
 
     print ("Orders have been placed!")
 
