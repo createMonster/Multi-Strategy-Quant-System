@@ -184,5 +184,5 @@ def main(use_disk=False, test=True):
 
 if __name__ == "__main__":
     print ("Working!")
+    #main(use_disk=False, test=True)
     main(use_disk=False, test=False)
-    #main(use_disk=True, test=True)
