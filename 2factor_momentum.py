@@ -1,5 +1,4 @@
-import json
-import datetime
+import time
 import pandas as pd
 from collections import defaultdict
 
@@ -11,6 +10,17 @@ import config.crypto_config as conf
 
 import warnings
 warnings.filterwarnings("ignore")
+
+LONG_RANK = [(0, 3), (1, 3), (4, 0)]
+lw = [0.25, 0.25, 0.5]
+SHORT_RANK = [(0, 0), (0, 2), (1, 0)]
+sw = [0.4, 0.2, 0.4]
+rank_weight_dict = {}
+for i, rank in enumerate(LONG_RANK):
+    rank_weight_dict[rank] = lw[i]
+for i, rank in enumerate(SHORT_RANK):
+    rank_weight_dict[rank] = sw[i]
+print (rank_weight_dict)
 
 def prepare_data(limit=100):
     """
@@ -38,26 +48,49 @@ def get_symbol_rank(rank_df, symbol):
     for col in rank_df.columns:
         if col[:6] == symbol[:6]:
             return int(rank_df[col])
+        
+def get_volitility(inst):
+    return float(df.iloc[-1][f"{inst} % ret vol"])
 
 def generate_rank_dict(rank1, rank2, instruments):
     rank_dict = defaultdict(list)
     for inst in instruments:
+        inst_details = {
+            "symbol": inst,
+            "vol_weight": 1 / (get_volitility(inst) + 0.001)
+        }
         r1, r2 = get_symbol_rank(rank1, inst), get_symbol_rank(rank2, inst)
-        rank_dict[(r1, r2)].append(inst)
+        rank_dict[(r1, r2)].append(inst_details)
 
-    return rank_dict
+    # Set weights
+    rank_dict_with_weights = defaultdict(list)
+    for k, v in rank_dict.items():
+        if k not in rank_weight_dict: continue
+        if not v: continue
+        try:
+            total_vol_weight = sum([x["vol_weight"] for x in v])
+            for details in v:
+                details["weight"] = rank_weight_dict[k] * details["vol_weight"] / total_vol_weight
+                rank_dict_with_weights[k].append(details)
+        except Exception as e:
+            print (e)
+            for details in v:
+                details["weight"] = rank_weight_dict[k] / len(v)
+                rank_dict_with_weights[k].append(details)
+
+    return rank_dict_with_weights
     
     
 def generate_signal(historical_data, instruments):
     """
     Generate signals
     """
+    global df
     df = historical_data.copy()
-    LOOK_BACK = 58
+    LOOK_BACK = 62
     LOOK_AHEAD = 15
-    K1, K2 = 6, 3
+    K1, K2 = 5, 4
     IGNORES = 5 # We do not want to count the closest momentum for possible reversion
-    LONG_RANK, SHORT_RANK = [(5, 0)], [(0, 0)]
 
     active_insts = []
     ret_cols = []
@@ -83,15 +116,16 @@ def generate_signal(historical_data, instruments):
     rank2 = pd.qcut(last.loc[0, second_feature_cols], K2, labels=False)
     
     # Based on rank generate symbols to be longed and symbols to be shorted
-    long_list, short_list = [], []
     rank_dict = generate_rank_dict(rank1, rank2, active_insts)
+
+    long_list, short_list = [], []
     for long_rank in LONG_RANK:
         long_list += rank_dict[long_rank]
     for short_rank in SHORT_RANK:
         short_list += rank_dict[short_rank]
 
-    print ("Long list: ", long_list)
-    print ("Short list: ", short_list)
+    #print ("Long list: ", long_list)
+    #print ("Short list: ", short_list)
     return long_list, short_list
 
 def execute_orders(long_list, short_list, test=True):
@@ -104,32 +138,43 @@ def execute_orders(long_list, short_list, test=True):
         print (curr_positions)
         return
 
+    long_symbols = [x["symbol"] for x in long_list]
+    short_symbols = [x["symbol"] for x in short_list]
+
     # Close positions
     for symbol, details in curr_positions.items():
         position_amount = details['positionAmt']
-        if symbol in long_list and position_amount > 0:
+        if symbol in long_symbols and position_amount > 0:
             continue
-        if symbol in short_list and position_amount < 0:
+        if symbol in short_symbols and position_amount < 0:
             continue
         client.close_positon(symbol, details)
 
     # Open positons
     curr_positions = client.get_account_positions()
     
-    for symbol in long_list:
+    for i, symbol in enumerate(long_symbols):
         if symbol not in curr_positions:
-            client.open_position(symbol, conf.BUY_PARAMS)
+            params = conf.BUY_PARAMS.copy()
+            params["collateral"] = params["collateral"] * long_list[i]["weight"]
+            print (symbol, params)
+            client.open_position(symbol, params)
+            time.sleep(0.3)
     
-    for symbol in short_list:
+    for i, symbol in enumerate(short_symbols):
         if symbol not in curr_positions:
-            client.open_position(symbol, conf.SELL_PARAMS)
+            params = conf.SELL_PARAMS.copy()
+            params["collateral"] = params["collateral"] * short_list[i]["weight"]
+            print (symbol, params)
+            client.open_position(symbol, params)
+            time.sleep(0.3)
 
     print ("Orders have been placed!")
 
 
 def main(use_disk=False, test=True):
     if not use_disk:
-        historical_data, instruments = prepare_data(limit=100)
+        historical_data, instruments = prepare_data(limit=200)
     else:
         historical_data = pd.read_excel("./crypto_historical_4h.xlsx", engine="openpyxl", index_col='open_time')
         instruments = crypto_du.get_symbols_from_df(historical_data)
@@ -139,5 +184,5 @@ def main(use_disk=False, test=True):
 
 if __name__ == "__main__":
     print ("Working!")
-    main(use_disk=True, test=False)
-    #main(use_disk=False, test=True)
+    main(use_disk=False, test=True)
+    #main(use_disk=False, test=False)
