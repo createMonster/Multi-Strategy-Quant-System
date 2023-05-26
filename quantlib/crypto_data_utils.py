@@ -33,6 +33,7 @@ def get_symbols_from_df(df):
             instruments.append(inst)
     return instruments
 
+
 def sleep_if_big_limit(limit):
     if limit >= 1000:
         time.sleep(0.35)

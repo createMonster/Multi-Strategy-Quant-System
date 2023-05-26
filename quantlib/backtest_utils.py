@@ -73,9 +73,7 @@ def unit_dollar_value(from_prod, historical_data, date):
         fx_quote = 1 if fx_inst == "USD_USD" else historical_data.loc[date, "{} close".format(fx_inst)]
         return unit_price * fx_quote
 
-#we set the leverage cap for 2 reasons
-#1. Prevent relative allocations from throwing off statistical relevance of performance results (reducing variance)
-#2. Meet margin requirements by the brokerage specification, where relevant
+
 def set_leverage_cap(portfolio_df, instruments, date, idx, nominal_tot, leverage_cap, historical_data):
     leverage = nominal_tot / portfolio_df.loc[idx, "capital"]
     if leverage > leverage_cap:
