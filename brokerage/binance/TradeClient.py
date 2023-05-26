@@ -1,7 +1,8 @@
 
-import json
+import os
 import pandas as pd
 import datetime
+from dotenv import load_dotenv
 
 from binance.um_futures import UMFutures
 from quantlib.crypto_format_utils import format_price, format_quantity
@@ -11,8 +12,9 @@ from collections import defaultdict
 class TradeClient():
 
     def __init__(self, brokerage_config=None, auth_config=None, service_client=None):
-        self.key='p7oSVwcOJx16QL3FZWmhe1yoTXjK5gbyxBM3dlkpHc3LVLJgfksrInn2paJJC0uK'
-        self.secret ='zcBJS77OsQPcphK6vcb43vUdP2djhb33XhBqAnljoyt5Vz7E5axCFAr4jadmIpv5'
+        load_dotenv()
+        self.key=os.getenv("KEY")
+        self.secret =os.getenv("SECRET")
         self.client = UMFutures(key=self.key, secret=self.secret)
         self.mark_price = None
 

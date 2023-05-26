@@ -3,3 +3,5 @@
 *.obj
 *.png
 *.DS_Store
+.env
+*.csv
