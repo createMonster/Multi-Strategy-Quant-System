@@ -16,5 +16,3 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     zip_safe=False
 ) #do go and read what these parameters mean!
-
-#you now have a code library!

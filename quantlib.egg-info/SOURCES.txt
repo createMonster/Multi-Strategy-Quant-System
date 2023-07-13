@@ -3,6 +3,7 @@ setup.py
 quantlib/__init__.py
 quantlib/backtest_utils.py
 quantlib/crypto_data_utils.py
+quantlib/crypto_format_utils.py
 quantlib/data_utils.py
 quantlib/diagnostics_utils.py
 quantlib/general_utils.py
